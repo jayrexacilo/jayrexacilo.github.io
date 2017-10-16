@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Local Weather App</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+
+	<style>
+		body, html {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+</head>
+<body class="bg-secondary">
+
+	<div class="container">
+		<div class="row">
+			<div class="col">
+				<h1 class="display-4 text-center mt-5">Local Weather Forecast</h1>
+				<h2 class="display-4 text-center mt-5" id="location"></h2>
+				<p class="lead text-center" id="weather" style="text-transform: capitalize;"></p>
+				<p class="lead text-center"><span id="temperature"></span><a href="#" id="unit-type" data-unit-type="" class="btn btn-link"></a></p>
+			</div>
+		</div>
+	</div>
+
+	<script>
+
+		if(navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+
+				var api = 'https://fcc-weather-api.glitch.me/api/current?';
+				var latitudeCoords = 'lat=' + position.coords.latitude;
+				var longitudeCoords = '&lon=' + position.coords.longitude;
+
+				var xhttp = new XMLHttpRequest();
+
+				xhttp.onreadystatechange = function() {
+					if(this.readyState == 4 && this.status == 200) {
+						var weatherAPI = JSON.parse(this.responseText);
+
+						showWeatherForecast(weatherAPI);
+					} else if (xhttp.status == 400) {
+						console.log('There was an error 400');
+					}
+				};
+				
+				xhttp.open('Get', api + latitudeCoords + longitudeCoords, true);
+				xhttp.send();
+
+			});
+		}
+
+		function showWeatherForecast(forecastObj) {
+
+			var city = forecastObj.name;
+			var country = forecastObj.sys.country;
+			var icon = forecastObj.weather[0].icon;
+			var description = forecastObj.weather[0].description;
+			var temp = forecastObj.main.temp;
+			var celsius = temp;
+			var farenheit = (temp * 9 / 5 + 32);
+			
+			var unitTypeTarget = document.getElementById('unit-type');
+			var tempValueTarget = document.getElementById('temperature')
+
+			document.getElementById('location').innerHTML = city + ', ' + country;
+			document.getElementById('weather').innerHTML = '<img src="' + icon + '"> ' + description;
+			tempValueTarget.innerHTML = celsius;
+			unitTypeTarget.innerHTML = ' °C';
+
+			var toggleTempUnitType = function() {
+				
+				unitTypeTarget.setAttribute('data-unit-type', (this.dataset.unitType != 'celsius' || this.dataset.unitType == '') ? 'celsius' : 'farenheit');
+				tempValueTarget.innerHTML = (this.dataset.unitType != 'celsius' || this.dataset.unitType == '') ? celsius : farenheit;
+				unitTypeTarget.innerHTML = (this.dataset.unitType != 'celsius' || this.dataset.unitType == '') ? ' °C' : ' °F';
+			};
+
+			unitTypeTarget.addEventListener('click', toggleTempUnitType);
+
+		}
+	</script>
+</body>
+</html>
